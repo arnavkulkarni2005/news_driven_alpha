@@ -1,0 +1,40 @@
+# docker-compose.yml
+# This file defines and runs your multi-service application with a single command.
+
+version: '3.8'
+
+services:
+  # 1. The Backend API Service
+  api:
+    build: .  # Build the image using the Dockerfile in the current directory
+    command: python -m flask --app backend.api:app run --host=0.0.0.0
+    volumes:
+      - .:/app  # Mount the project directory to /app in the container for live code updates
+    ports:
+      - "5000:5000" # Map port 5000 on your machine to port 5000 in the container
+    env_file:
+      - .env      # Load environment variables from the .env file
+
+  # 2. The Scheduler Service
+  scheduler:
+    build: .
+    command: python -m scripts.scheduled_tasks
+    volumes:
+      - .:/app
+    depends_on: # Wait for the api service to be healthy before starting (good practice)
+      - api
+    env_file:
+      - .env
+
+  # 3. The Frontend Service
+  frontend:
+    build: .
+    command: python -m streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    volumes:
+      - .:/app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    env_file:
+      - .env
