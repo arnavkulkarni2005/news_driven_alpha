@@ -10,7 +10,7 @@ set -e
 case "$STARTUP_COMMAND" in
   api)
     echo "Starting API server..."
-    exec gunicorn backend.api:app
+    exec gunicorn --bind 0.0.0.0:$PORT backend.api:app
     ;;
   frontend)
     echo "Starting Streamlit frontend..."
