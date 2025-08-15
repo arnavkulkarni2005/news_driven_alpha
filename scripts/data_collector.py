@@ -33,14 +33,14 @@ class NewsFetcher:
 
                     for article in articles:
                         # Avoid duplicates
-                        cursor.execute("SELECT id FROM articles WHERE url = ?", (article['url'],))
+                        cursor.execute("SELECT id FROM articles WHERE url = %s", (article['url'],))
                         if cursor.fetchone():
                             continue
 
                         cursor.execute(
                             """
                             INSERT INTO articles (ticker_id, title, url, source, published_at, content)
-                            VALUES (?, ?, ?, ?, ?, ?)
+                            VALUES (%s, %s, %s, %s, %s, %s)
                             """,
                             (
                                 ticker['id'],

@@ -20,11 +20,15 @@ def get_tickers():
 def add_ticker(symbol):
     with get_db_connection() as conn:
         try:
-            conn.execute("INSERT INTO tickers (symbol) VALUES (?)", (symbol.upper(),))
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO tickers (symbol) VALUES (%s)", (symbol.upper(),))
             conn.commit()
             st.success(f"Added ticker: {symbol.upper()}")
         except conn.IntegrityError:
             st.warning(f"Ticker {symbol.upper()} is already tracked.")
+        finally:
+            cursor.close()
+
 
 def get_sentiment_data(ticker_symbol):
     query = """
@@ -37,10 +41,11 @@ def get_sentiment_data(ticker_symbol):
         FROM sentiment_data s
         JOIN articles a ON s.article_id = a.id
         JOIN tickers t ON a.ticker_id = t.id
-        WHERE t.symbol = ?
+        WHERE t.symbol = %s
         ORDER BY a.published_at DESC
     """
     with get_db_connection() as conn:
+        # The params argument for read_sql_query with psycopg2 needs a list or tuple
         return pd.read_sql_query(query, conn, params=(ticker_symbol,))
 
 # --- UI Components ---
