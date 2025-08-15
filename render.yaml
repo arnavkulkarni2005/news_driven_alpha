@@ -1,0 +1,49 @@
+services:
+  # Backend API Service (Flask with Gunicorn)
+  - type: web
+    name: sentiment-api
+    plan: free
+    env: docker
+    dockerfilePath: ./Dockerfile
+    # Use Gunicorn for a production-ready server
+    startCommand: gunicorn backend.api:app
+    healthCheckPath: /api/tickers
+    envVars:
+      - fromGroup: sentiment-lens-env
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sentiment-db
+          property: connectionString
+
+  # Frontend Service (Streamlit)
+  - type: web
+    name: sentiment-frontend
+    plan: free
+    env: docker
+    dockerfilePath: ./Dockerfile
+    startCommand: python -m streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    envVars:
+      - fromGroup: sentiment-lens-env
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sentiment-db
+          property: connectionString
+
+  # Scheduler Worker
+  - type: worker
+    name: scheduler
+    plan: free
+    env: docker
+    dockerfilePath: ./Dockerfile
+    startCommand: python scripts/scheduled_tasks.py
+    envVars:
+      - fromGroup: sentiment-lens-env
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sentiment-db
+          property: connectionString
+
+databases:
+  # Free PostgreSQL Database
+  - name: sentiment-db
+    plan: free

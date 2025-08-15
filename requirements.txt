@@ -1,0 +1,14 @@
+streamlit
+plotly
+pandas
+flask
+python-dotenv
+requests
+schedule
+transformers
+torch
+datasets
+scikit-learn
+pydantic
+psycopg2-binary
+gunicorn
