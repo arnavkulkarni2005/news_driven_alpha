@@ -13,7 +13,7 @@ services:
           property: connectionString
       - key: STARTUP_COMMAND
         value: api
-      - key: "3f4a704ca8484e528ef3a4394c50b226" # Add your secret key here
+      - key: NEWS_API_KEY # This is the corrected line
         sync: false
 
   # Frontend Service (Streamlit)
@@ -29,7 +29,7 @@ services:
           property: connectionString
       - key: STARTUP_COMMAND
         value: frontend
-      - key: NEWS_API_KEY # Add your secret key here
+      - key: NEWS_API_KEY
         sync: false
 
   # Scheduler Worker
@@ -45,7 +45,7 @@ services:
           property: connectionString
       - key: STARTUP_COMMAND
         value: scheduler
-      - key: NEWS_API_KEY # Add your secret key here
+      - key: NEWS_API_KEY
         sync: false
 
 databases:
