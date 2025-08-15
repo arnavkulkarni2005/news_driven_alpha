@@ -18,10 +18,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code
 COPY . .
 
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Expose ports for frontend and backend
 EXPOSE 8501
 EXPOSE 5000
 
-# This default command is useful for local testing but will be
-# overridden by render.yaml on the platform.
-CMD ["python", "-m", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Set the entrypoint for the container
+ENTRYPOINT ["entrypoint.sh"]
