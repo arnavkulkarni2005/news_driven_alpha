@@ -1,6 +1,10 @@
 from flask import Flask, jsonify
 import pandas as pd
 from backend.database import get_db_connection
+import threading
+import time
+import schedule
+from scripts.scheduled_tasks import run_all_tasks
 
 app = Flask(__name__)
 
@@ -21,7 +25,6 @@ def get_sentiment_data_for_api(ticker_symbol):
         ORDER BY a.published_at DESC
     """
     with get_db_connection() as conn:
-        # The params argument for read_sql_query with psycopg2 needs a list or tuple
         df = pd.read_sql_query(query, conn, params=(ticker_symbol,))
         return df.to_dict(orient='records')
 
@@ -41,5 +44,29 @@ def get_sentiment_api(ticker_symbol):
     else:
         return jsonify({"error": f"No data found for ticker {ticker_symbol}"}), 404
 
+def run_scheduler():
+    """Runs the scheduled tasks in a loop."""
+    # Run the tasks once immediately on startup
+    run_all_tasks() 
+    
+    # Then schedule them to run every hour
+    schedule.every().hour.do(run_all_tasks)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+# This block will not run when using Gunicorn, but it's good for local testing.
+# The entrypoint.sh script will start Gunicorn directly.
 if __name__ == '__main__':
+    # Start the scheduler in a background thread
+    scheduler_thread = threading.Thread(target=run_scheduler)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
+    
+    # Run the Flask app
     app.run(debug=True, port=5000)
+
+# Start the scheduler when the app is run with Gunicorn
+scheduler_thread = threading.Thread(target=run_scheduler)
+scheduler_thread.daemon = True
+scheduler_thread.start()
